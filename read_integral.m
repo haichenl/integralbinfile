@@ -16,31 +16,31 @@ ke = fread(fileID,[nrow2,ncol2],'double');
 
 nbasis = nrow1;
 en = zeros(nbasis, nbasis, natom);
-for i=1:natom
+for iatom=1:natom
     A3 = fread(fileID,3,'int');
     nh3 = A3(1);
     nrow3 = A3(2);
     ncol3 = A3(3);
-    en(:,:,i) = fread(fileID,[nrow3,ncol3],'double');
+    en(:,:,iatom) = fread(fileID,[nrow3,ncol3],'double');
 end
 
 nuniq = (nbasis.*(nbasis+1).*(nbasis.^2+nbasis+2))./8;
 h2 = zeros(nbasis, nbasis, nbasis, nbasis);
-for i=1:nuniq
+for iuni=1:nuniq
     ind = fread(fileID,4,'int');
-    p = ind(1) + 1;
-    q = ind(2) + 1;
-    r = ind(3) + 1;
-    s = ind(4) + 1;
+    i = ind(1) + 1;
+    j = ind(2) + 1;
+    k = ind(3) + 1;
+    l = ind(4) + 1;
     tmp = fread(fileID,1,'double');
-    h2(p, q, r, s) = tmp;
-    h2(r, s, p, q) = tmp;
-    h2(p, q, s, r) = tmp;
-    h2(s, r, p, q) = tmp;
-    h2(q ,p, r, s) = tmp;
-    h2(r, s, q, p) = tmp;
-    h2(q, p, s, r) = tmp;
-    h2(s, r, q, p) = tmp;
+    h2(i, j, k, l) = tmp;
+    h2(k, l, i, j) = tmp;
+    h2(i, j, l, k) = tmp;
+    h2(l, k, i, j) = tmp;
+    h2(j ,i, k, l) = tmp;
+    h2(k, l, j, i) = tmp;
+    h2(j, i, l, k) = tmp;
+    h2(l, k, j, i) = tmp;
 end
 
 fclose(fileID);
