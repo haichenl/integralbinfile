@@ -120,7 +120,7 @@ class PotentialInt_1Atom : public PotentialInt
                 // molecule)
                 
                 // spring:
-                int atom=curr_atom;
+                int atom = curr_atom;
                 //
                 
                 double PC[3];

@@ -92,9 +92,10 @@ PsiReturnType integralbinfile(Options &options)
     integral_bin_file << tMat;
     
     // potential
+    boost::shared_ptr<IntegralFactory_1Atom> integral_1atom(new IntegralFactory_1Atom(0, aoBasis, aoBasis, aoBasis, aoBasis));
     for(int iatom = 0; iatom < natom; iatom++)
     {
-    	  boost::shared_ptr<IntegralFactory_1Atom> integral_1atom(new IntegralFactory_1Atom(iatom, aoBasis, aoBasis, aoBasis, aoBasis));
+    	  integral_1atom->set_curr_atom(iatom);
     	  SharedMatrix vMat_temp(factory->create_matrix("Potential_1Atom"));
         boost::shared_ptr<OneBodyAOInt> v1AtomOBI(integral_1atom->ao_potential());
         v1AtomOBI->compute(vMat_temp);

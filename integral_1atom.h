@@ -103,11 +103,15 @@ public:
     virtual ~IntegralFactory_1Atom()
     {
     }
-
     
     virtual OneBodyAOInt* ao_potential(int deriv=0)
     {
         return new PotentialInt_1Atom(curr_atom , spherical_transforms_, bs1_, bs2_, deriv);
+    }
+    
+    void set_curr_atom(int input_curr_atom)
+    {
+    	  curr_atom = input_curr_atom;
     }
     
 };
