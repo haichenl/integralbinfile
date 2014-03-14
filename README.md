@@ -11,21 +11,21 @@ binary file format:
 
 1 int: number of atoms 
 
-3 ints: nirrep, nrow, ncol for overlap matrix (S) 
+3 ints: nirrep, nrow, ncol for the overlap matrix (S) 
 
-nbasis*nbasis doubles: S 
+nbasis*nbasis doubles: integral values in S 
 
-3 ints: nirrep, nrow, ncol for KE matrix (KE) 
+3 ints: nirrep, nrow, ncol for the kinetic energy matrix (KE) 
 
-nbasis*nbasis doubles: KE
+nbasis*nbasis doubles: integral values in KE
 
-potential matrices; there are (number of atoms) matricies, each has: 
+% potential energy matrices; there are (number of atoms) matricies, each in the form: 
 
-3 ints: nirrep, nrow, ncol for EN(:, :, i) 
+3 ints: nirrep, nrow, ncol for the ith potential energy matrix EN(:, :, i) 
 
-nbasis*nbasis doubles: EN(:, :, i) 
+nbasis*nbasis doubles: integral values in EN(:, :, i) 
 
-2-electron integrals; there are n_unique of them, each has: 
+% 2-electron integrals; there are (number of unique 2-e integrals) of them, each in the form: 
 
 4 ints: indices i, j, k, l 
 
