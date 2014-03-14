@@ -31,4 +31,5 @@ nbasis*nbasis doubles: EN(:, :, i)
 
 1 double: integral value H2(i, j, k, l) 
 
-#EOF
+% end of file
+
