@@ -19,7 +19,7 @@ nbasis*nbasis doubles: S
 
 nbasis*nbasis doubles: KE
 
-potential matrices; there are number of atoms matricies, each has: 
+potential matrices; there are (number of atoms) matricies, each has: 
 
 3 ints: nirrep, nrow, ncol for EN(:, :, i) 
 
