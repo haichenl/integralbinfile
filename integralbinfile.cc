@@ -5,10 +5,10 @@
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
 
-// spring
+// spring start
 #include "inout.h"
 #include "integral_1atom.h"
-//
+// spring end 
 
 INIT_PLUGIN
 
