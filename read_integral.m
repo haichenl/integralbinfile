@@ -43,4 +43,6 @@ for iuni=1:nuniq
     h2(l, k, j, i) = tmp;
 end
 
+e_nuc = fread(fileID,1,'double');
+
 fclose(fileID);

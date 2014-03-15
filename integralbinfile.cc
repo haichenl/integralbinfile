@@ -31,9 +31,9 @@ int read_options(std::string name, Options &options)
 extern "C"
 PsiReturnType integralbinfile(Options &options)
 {
-	  // spring:
+	  // spring start 
 	  Binary_ofstream integral_bin_file("integral.bin");
-	  //
+	  // spring end
 	  
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
@@ -91,7 +91,7 @@ PsiReturnType integralbinfile(Options &options)
     // kinetic 
     integral_bin_file << tMat;
     
-    // potential
+    // potential: generate a 1Atom factory and use this factory 
     boost::shared_ptr<IntegralFactory_1Atom> integral_1atom(new IntegralFactory_1Atom(0, aoBasis, aoBasis, aoBasis, aoBasis));
     for(int iatom = 0; iatom < natom; iatom++)
     {
@@ -131,16 +131,22 @@ PsiReturnType integralbinfile(Options &options)
                 fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
                     p, q, r, s, buffer[intIter.index()]);
                 
-                // spring:
+                // spring start 
                 integral_bin_file << p << q << r << s;
                 integral_bin_file << buffer[intIter.index()];
-                //
+                // spring end
                 
                 ++count;
             }
         }
         fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
     }
+    
+    // spring start 
+    // nuclear repulsion energy
+    double e_nuc = molecule->nuclear_repulsion_energy();
+    integral_bin_file << e_nuc;
+    // spring end
 
     return Success;
 }
