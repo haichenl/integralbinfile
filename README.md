@@ -12,7 +12,8 @@ binary file format:
 1 int: number of atoms 
 
 3 ints: nirrep, nrow, ncol for the overlap matrix (S),
-both nrow and ncol are equal to the number of basis functions (nbasis) 
+
+%both nrow and ncol are equal to the number of basis functions (nbasis) 
 
 nbasis*nbasis doubles: integral values in S 
 
