@@ -109,10 +109,12 @@ public:
         return new PotentialInt_1Atom(curr_atom , spherical_transforms_, bs1_, bs2_, deriv);
     }
     
+    // spring start
     void set_curr_atom(int input_curr_atom)
     {
     	  curr_atom = input_curr_atom;
     }
+    // spring end
     
 };
 

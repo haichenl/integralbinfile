@@ -119,9 +119,9 @@ class PotentialInt_1Atom : public PotentialInt
                 // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
                 // molecule)
                 
-                // spring:
+                // spring start; previously there was a for loop 
                 int atom = curr_atom;
-                //
+                // spring end
                 
                 double PC[3];
 

@@ -79,7 +79,7 @@ PsiReturnType integralbinfile(Options &options)
     tMat->print();
     vMat->print();
     
-    // spring: output
+    // spring start: output integrals into the binary file
     
     // number of atoms
     int natom = molecule->natom();
@@ -101,6 +101,7 @@ PsiReturnType integralbinfile(Options &options)
         v1AtomOBI->compute(vMat_temp);
         integral_bin_file << vMat_temp;
     }
+    // spring end
 
     // Form h = T + V by first cloning T and then adding V
     hMat->copy(tMat);
