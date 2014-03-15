@@ -31,5 +31,7 @@ nbasis*nbasis doubles: integral values in EN(:, :, i)
 
 1 double: integral value H2(i, j, k, l) 
 
+1 double: nuclear repulsion energy (e_nuc) 
+
 % end of file
 
