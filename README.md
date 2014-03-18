@@ -15,11 +15,11 @@ binary file format:
 
 nbasis*nbasis doubles: integral values in S 
 
-3 ints: nirrep, nrow, ncol for the kinetic energy matrix (KE) 
+3 ints: nirrep, nrow, ncol for the kinetic energy integral matrix (KE) 
 
 nbasis*nbasis doubles: integral values in KE
 
-% potential energy matrices; there are (number of atoms) matricies, each in the form: 
+% potential energy integral matrices; there are (number of atoms) matricies, each in the form: 
 
 3 ints: nirrep, nrow, ncol for the ith potential energy matrix EN(:, :, i) 
 
@@ -30,6 +30,14 @@ nbasis*nbasis doubles: integral values in EN(:, :, i)
 4 ints: indices i, j, k, l 
 
 1 double: integral value H2(i, j, k, l) 
+
+1 int: variable do_env controlling whether we compute environment potential integrals 
+
+1 int: number of environment point charges (num_ptq) 
+
+% environment potential energy integral matrices; there are (num_ptq) matricies, each in the form: 
+
+3 ints: nirrep, nrow, ncol for the ith environment potential energy matrix ENV(:, :, i) 
 
 % end of file
 
