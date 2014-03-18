@@ -24,22 +24,55 @@ int read_options(std::string name, Options &options)
         options.add_bool("DO_TEI", true);
         /*- Name of the output binary file -*/
         options.add_str("BINFILENAME", "integral.bin");
-        /*- Whether to compute environment potential integrals -*/
-        options.add_bool("DO_ENV", false);
-        /*- The number of the environmental dot charges -*/
-        options.add_int("NUM_PTQ", 0);
-        /*- zxyz array of the environmental dot charges -*/
-        options.add("ZXYZ_PTQ", new ArrayType());
+        /*- Whether to compute internal environment potential integrals -*/
+        options.add_bool("DO_ENV_IN", false);
+        /*- The number of internal environmental point charges -*/
+        options.add_int("NUM_PTQ_IN", 0);
+        /*- zxyz array of internal environmental point charges -*/
+        options.add("ZXYZ_PTQ_IN", new ArrayType());
+        /*- Whether to compute external environment potential integrals -*/
+        options.add_bool("DO_ENV_EX", false);
+        /*- The number of external environmental point charges -*/
+        options.add_int("NUM_PTQ_EX", 0);
+        /*- zxyz array of external environmental point charges -*/
+        options.add("ZXYZ_PTQ_EX", new ArrayType());
     }
     
     return true;
 }
 
-void set_ZxyzMat(SharedMatrix ZxyzMat, boost::shared_ptr<double[]> Zxyz_array, int num_dotq) 
+void set_ZxyzMat(SharedMatrix ZxyzMat, boost::shared_ptr<double[]> Zxyz_array, int num_ptq) 
 {
-    for(int i = 0; i < num_dotq; i++) {
+    for(int i = 0; i < num_ptq; i++) {
         for(int j = 0; j < 4; j++) {
             ZxyzMat->set(i, j, Zxyz_array[i*4+j]);
+        }
+    }
+}
+
+void write_env(std::string InOrEx, boost::shared_ptr<MatrixFactory> factory, boost::shared_ptr<IntegralFactory_binfile> integral, Binary_ofstream &integral_bin_file, Options &options)
+{
+    std::string do_env_string = "DO_ENV_";
+    do_env_string += InOrEx;
+    int doEnv = options.get_bool(do_env_string.c_str());
+    integral_bin_file << doEnv;
+    if(doEnv) {
+        std::string num_ptq_string = "NUM_PTQ_";
+        num_ptq_string += InOrEx;
+        int num_ptq = options.get_int(num_ptq_string.c_str());
+        integral_bin_file << num_ptq;
+        std::string zxyz_ptq_string = "ZXYZ_PTQ_";
+        zxyz_ptq_string += InOrEx;
+        boost::shared_ptr<double[]> Zxyz_array(options.get_double_array(zxyz_ptq_string.c_str()));
+        boost::shared_ptr<MatrixFactory> Zxyzfactory(new MatrixFactory);
+        SharedMatrix ZxyzMat = Zxyzfactory->create_shared_matrix("Zxyz", num_ptq, 4);
+        set_ZxyzMat(ZxyzMat, Zxyz_array, num_ptq);
+        for(int i = 0; i < num_ptq; i++) {
+            SharedVector curr_ptqvec(ZxyzMat->get_row(0, i));
+            boost::shared_ptr<OneBodyAOInt> ptqOBI(integral->ao_potential_ptq(curr_ptqvec));
+            SharedMatrix vMat_ptq(factory->create_matrix("Potential_ptq"));
+            ptqOBI->compute(vMat_ptq);
+            integral_bin_file<<vMat_ptq;
         }
     }
 }
@@ -164,29 +197,13 @@ PsiReturnType integralbinfile(Options &options)
     // spring end
     
     // spring start
-    // whether we do environment calculation 
-    int doEnv = options.get_bool("DO_ENV");
-    integral_bin_file << doEnv;
-    if(doEnv) {
-        int num_dotq = options.get_int("NUM_PTQ");
-        integral_bin_file << num_dotq;
-        boost::shared_ptr<double[]> Zxyz_array(options.get_double_array("ZXYZ_PTQ"));
-        boost::shared_ptr<MatrixFactory> Zxyzfactory(new MatrixFactory);
-        SharedMatrix ZxyzMat = Zxyzfactory->create_shared_matrix("Zxyz", num_dotq, 4);
-        set_ZxyzMat(ZxyzMat, Zxyz_array, num_dotq);
-        for(int i = 0; i < num_dotq; i++) {
-            SharedVector curr_dotqvec(ZxyzMat->get_row(0, i));
-            boost::shared_ptr<OneBodyAOInt> dotqOBI(integral->ao_potential_ptq(curr_dotqvec));
-            SharedMatrix vMat_dotq(factory->create_matrix("Potential_dotq"));
-            dotqOBI->compute(vMat_dotq);
-            //vMat_dotq->print(stdout);
-            integral_bin_file<<vMat_dotq;
-        }
-    }
+    // whether we do internal environment calculation 
+    write_env("IN", factory, integral, integral_bin_file, options);
+    // whether we do external environment calculation 
+    write_env("EX", factory, integral, integral_bin_file, options);
+    // spring end
 
     return Success;
 }
-
-
 
 }} // End Namespaces

@@ -19,13 +19,17 @@ set {
 
 set integralbinfile {
   print 1
-  do_tei true
-  do_env true
   binfilename notintegral.bin # goes to upper case anyway
-  num_ptq 2
-  zxyz_ptq [ 1.0, 2.0, 3.0, 4.0 
-            , 5.0, 6.0, 7.0, 8.0
-            , 9.0, 10.0, 11.0, 12.0]
+  do_env_in true
+  num_ptq_in 2
+  zxyz_ptq_in [ 1.0, 2.0, 3.0, 4.0 
+              , 5.0, 6.0, 7.0, 8.0
+              , 9.0, 10.0, 11.0, 12.0]
+  do_env_ex true
+  num_ptq_ex 3
+  zxyz_ptq_ex [ 1.0, 2.0, 3.0, 4.0 
+              , 5.0, 6.0, 7.0, 8.0
+              , 9.0, 10.0, 11.0, 12.0]
 # has to be in the form [Z1 x1 y1 z1]
 #                        Z2 x2 y2 z2
 #                        ...        ]

@@ -167,13 +167,7 @@ class PotentialInt_ptq : public PotentialInt
     //void compute_pair_deriv2(const GaussianShell&, const GaussianShell& );
 
 protected:
-    int curr_atom;
     SharedVector ptq_zxyz;
-    /// Recursion object that does the heavy lifting.
-    //ObaraSaikaTwoCenterVIRecursion* potential_recur_;
-
-    /// Matrix of coordinates/charges of partial charges
-    //SharedMatrix Zxyz_;
 
 public:
     /// Constructor. Assumes nuclear centers/charges as the potential
@@ -187,20 +181,6 @@ public:
     {
     }
 
-    /// Computes the first derivatives and stores them in result
-    //virtual void compute_deriv1(std::vector<SharedMatrix > &result);
-
-    /// Computes the second derivatives and store them in result
-    //virtual void compute_deriv2(std::vector<SharedMatrix>& result);
-
-    /// Set the field of charges
-    //void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
-
-    /// Get the field of charges
-    //SharedMatrix charge_field() const { return Zxyz_; }
-
-    /// Does the method provide first derivatives?
-    //bool has_deriv1() { return true; }
 };
 
 }

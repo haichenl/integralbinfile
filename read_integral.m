@@ -44,13 +44,24 @@ for iuni=1:nuniq
 end
 
 e_nuc = fread(fileID,1,'double');
-do_env = fread(fileID,1,'int');
-if(do_env)
-    num_ptq = fread(fileID,1,'int');
-    env = zeros(nbasis, nbasis, num_ptq);
-    for i_ptq=1:num_ptq
+
+do_env_in = fread(fileID,1,'int');
+if(do_env_in)
+    num_ptq_in = fread(fileID,1,'int');
+    env_in = zeros(nbasis, nbasis, num_ptq_in);
+    for i_ptq=1:num_ptq_in
         dimtmp = fread(fileID,3,'int');
-        env(:,:,i_ptq) = fread(fileID,[nrow3,ncol3],'double');
+        env_in(:,:,i_ptq) = fread(fileID,[nrow3,ncol3],'double');
+    end
+end
+
+do_env_ex = fread(fileID,1,'int');
+if(do_env_ex)
+    num_ptq_ex = fread(fileID,1,'int');
+    env_ex = zeros(nbasis, nbasis, num_ptq_ex);
+    for i_ptq=1:num_ptq_ex
+        dimtmp = fread(fileID,3,'int');
+        env_ex(:,:,i_ptq) = fread(fileID,[nrow3,ncol3],'double');
     end
 end
 

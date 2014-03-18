@@ -180,15 +180,6 @@ public:
     {
     }
     
-    void set_curr_atom(int input_curr_atom)
-    {
-        curr_atom = input_curr_atom;
-    }
-    
-    int get_curr_atom()
-    {
-        return curr_atom;
-    }
 };
 
 }
