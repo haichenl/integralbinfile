@@ -11,9 +11,7 @@ binary file format:
 
 1 int: number of atoms 
 
-3 ints: nirrep, nrow, ncol for the overlap matrix (S),
-
-% both nrow and ncol are equal to the number of basis functions (nbasis) 
+3 ints: nirrep, nrow, ncol for the overlap matrix (S), both nrow and ncol are equal to the number of basis functions (nbasis) 
 
 nbasis*nbasis doubles: integral values in S 
 
@@ -32,8 +30,6 @@ nbasis*nbasis doubles: integral values in EN(:, :, i)
 4 ints: indices i, j, k, l 
 
 1 double: integral value H2(i, j, k, l) 
-
-1 double: nuclear repulsion energy (e_nuc) 
 
 % end of file
 

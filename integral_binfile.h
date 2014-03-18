@@ -20,8 +20,8 @@
  *@END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_integral_1Atom_h_
-#define _psi_src_lib_libmints_integral_1Atom_h_
+#ifndef _psi_src_lib_libmints_integral_binfile_h_
+#define _psi_src_lib_libmints_integral_binfile_h_
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
@@ -32,6 +32,7 @@
 #include <libmints/mints.h>
 #include <libint/libint.h>
 #include "potential_1atom.h"
+#include "potential_ptq.h"
 
 /*! \def INT_NCART(am)
     Gives the number of cartesian functions for an angular momentum.
@@ -77,44 +78,38 @@ class SOBasisSet;
 class CorrelationFactor;
 
 /*! \ingroup MINTS */
-class IntegralFactory_1Atom : public IntegralFactory
+class IntegralFactory_binfile : public IntegralFactory
 {
 protected:
-	  int curr_atom;
 
 public:
     /** Initialize IntegralFactory object given a BasisSet for each center. */
-    IntegralFactory_1Atom(int input_curr_atom, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
+    IntegralFactory_binfile(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
                     boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4) : IntegralFactory(bs1, bs2, bs3, bs4)
     {
-    	  curr_atom = input_curr_atom;
     }
     /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs2 | bs1 bs2). */
-    IntegralFactory_1Atom(int input_curr_atom, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2) : IntegralFactory(bs1, bs2)
+    IntegralFactory_binfile(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2) : IntegralFactory(bs1, bs2)
     {
-    	  curr_atom = input_curr_atom;
     }
     /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs1 | bs1 bs1). */
-    IntegralFactory_1Atom(int input_curr_atom, boost::shared_ptr<BasisSet> bs1) : IntegralFactory(bs1)
+    IntegralFactory_binfile(boost::shared_ptr<BasisSet> bs1) : IntegralFactory(bs1)
     {
-    	  curr_atom = input_curr_atom;
     }
 
-    virtual ~IntegralFactory_1Atom()
+    virtual ~IntegralFactory_binfile()
     {
     }
     
-    virtual OneBodyAOInt* ao_potential(int deriv=0)
+    virtual OneBodyAOInt* ao_potential_1atom(int curr_atom, int deriv=0)
     {
-        return new PotentialInt_1Atom(curr_atom , spherical_transforms_, bs1_, bs2_, deriv);
+        return new PotentialInt_1Atom(curr_atom, spherical_transforms_, bs1_, bs2_, deriv);
     }
     
-    // spring start
-    void set_curr_atom(int input_curr_atom)
+    virtual OneBodyAOInt* ao_potential_ptq(SharedVector ptq_zxyz, int deriv=0)
     {
-    	  curr_atom = input_curr_atom;
+        return new PotentialInt_ptq(ptq_zxyz, spherical_transforms_, bs1_, bs2_, deriv);
     }
-    // spring end
     
 };
 

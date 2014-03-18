@@ -6,9 +6,9 @@
 #include <libpsio/psio.h>
 
 // spring start
-#include "inout.h"
-#include "integral_1atom.h"
-// spring end 
+#include "integral_binfile.h"
+#include "binaryio.h"
+// spring end
 
 INIT_PLUGIN
 
@@ -18,23 +18,40 @@ extern "C"
 int read_options(std::string name, Options &options)
 {
     if (name == "INTEGRALBINFILE"|| options.read_globals()) {
-        /*- The amount of information printed
-            to the output file -*/
+        /*- The amount of information printed to the output file -*/
         options.add_int("PRINT", 1);
         /*- Whether to compute two-electron integrals -*/
         options.add_bool("DO_TEI", true);
+        /*- Name of the output binary file -*/
+        options.add_str("BINFILENAME", "integral.bin");
+        /*- Whether to compute environment potential integrals -*/
+        options.add_bool("DO_ENV", false);
+        /*- The number of the environmental dot charges -*/
+        options.add_int("NUM_PTQ", 0);
+        /*- zxyz array of the environmental dot charges -*/
+        options.add("ZXYZ_PTQ", new ArrayType());
     }
-
+    
     return true;
+}
+
+void set_ZxyzMat(SharedMatrix ZxyzMat, boost::shared_ptr<double[]> Zxyz_array, int num_dotq) 
+{
+    for(int i = 0; i < num_dotq; i++) {
+        for(int j = 0; j < 4; j++) {
+            ZxyzMat->set(i, j, Zxyz_array[i*4+j]);
+        }
+    }
 }
 
 extern "C"
 PsiReturnType integralbinfile(Options &options)
 {
-	  // spring start 
-	  Binary_ofstream integral_bin_file("integral.bin");
-	  // spring end
-	  
+    // spring start 
+    std::string binfilename = options.get_str("BINFILENAME");
+    Binary_ofstream integral_bin_file(binfilename.c_str());
+    // spring end
+    
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
 
@@ -47,8 +64,8 @@ PsiReturnType integralbinfile(Options &options)
     boost::shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
 
     // The integral factory oversees the creation of integral objects
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
-            (aoBasis, aoBasis, aoBasis, aoBasis));
+    boost::shared_ptr<IntegralFactory_binfile> integral(new IntegralFactory_binfile
+    (aoBasis, aoBasis, aoBasis, aoBasis));
     
     // N.B. This should be called after the basis has been built, because the geometry has not been
     // fully initialized until this time.
@@ -91,13 +108,11 @@ PsiReturnType integralbinfile(Options &options)
     // kinetic 
     integral_bin_file << tMat;
     
-    // potential: generate a 1Atom factory and use this factory 
-    boost::shared_ptr<IntegralFactory_1Atom> integral_1atom(new IntegralFactory_1Atom(0, aoBasis, aoBasis, aoBasis, aoBasis));
+    // potential 
     for(int iatom = 0; iatom < natom; iatom++)
     {
-    	  integral_1atom->set_curr_atom(iatom);
-    	  SharedMatrix vMat_temp(factory->create_matrix("Potential_1Atom"));
-        boost::shared_ptr<OneBodyAOInt> v1AtomOBI(integral_1atom->ao_potential());
+        SharedMatrix vMat_temp(factory->create_matrix("Potential_1Atom"));
+        boost::shared_ptr<OneBodyAOInt> v1AtomOBI(integral->ao_potential_1atom(iatom));
         v1AtomOBI->compute(vMat_temp);
         integral_bin_file << vMat_temp;
     }
@@ -109,7 +124,7 @@ PsiReturnType integralbinfile(Options &options)
     hMat->print();
 
     if(doTei){
-         fprintf(outfile, "\n  Two-electron Integrals\n\n");
+        fprintf(outfile, "\n  Two-electron Integrals\n\n");
 
         // Now, the two-electron integrals
         boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
@@ -129,7 +144,7 @@ PsiReturnType integralbinfile(Options &options)
                 int r = intIter.k();
                 int s = intIter.l();
                 fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
-                    p, q, r, s, buffer[intIter.index()]);
+                p, q, r, s, buffer[intIter.index()]);
                 
                 // spring start 
                 integral_bin_file << p << q << r << s;
@@ -147,8 +162,31 @@ PsiReturnType integralbinfile(Options &options)
     double e_nuc = molecule->nuclear_repulsion_energy();
     integral_bin_file << e_nuc;
     // spring end
+    
+    // spring start
+    // whether we do environment calculation 
+    int doEnv = options.get_bool("DO_ENV");
+    integral_bin_file << doEnv;
+    if(doEnv) {
+        int num_dotq = options.get_int("NUM_PTQ");
+        integral_bin_file << num_dotq;
+        boost::shared_ptr<double[]> Zxyz_array(options.get_double_array("ZXYZ_PTQ"));
+        boost::shared_ptr<MatrixFactory> Zxyzfactory(new MatrixFactory);
+        SharedMatrix ZxyzMat = Zxyzfactory->create_shared_matrix("Zxyz", num_dotq, 4);
+        set_ZxyzMat(ZxyzMat, Zxyz_array, num_dotq);
+        for(int i = 0; i < num_dotq; i++) {
+            SharedVector curr_dotqvec(ZxyzMat->get_row(0, i));
+            boost::shared_ptr<OneBodyAOInt> dotqOBI(integral->ao_potential_ptq(curr_dotqvec));
+            SharedMatrix vMat_dotq(factory->create_matrix("Potential_dotq"));
+            dotqOBI->compute(vMat_dotq);
+            //vMat_dotq->print(stdout);
+            integral_bin_file<<vMat_dotq;
+        }
+    }
 
     return Success;
 }
+
+
 
 }} // End Namespaces

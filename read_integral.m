@@ -1,5 +1,5 @@
 clear;
-fileID = fopen('integral.bin');
+fileID = fopen('NOTINTEGRAL.BIN');
 natom = fread(fileID,1,'int');
 
 A1 = fread(fileID,3,'int');
@@ -44,5 +44,14 @@ for iuni=1:nuniq
 end
 
 e_nuc = fread(fileID,1,'double');
+do_env = fread(fileID,1,'int');
+if(do_env)
+    num_ptq = fread(fileID,1,'int');
+    env = zeros(nbasis, nbasis, num_ptq);
+    for i_ptq=1:num_ptq
+        dimtmp = fread(fileID,3,'int');
+        env(:,:,i_ptq) = fread(fileID,[nrow3,ncol3],'double');
+    end
+end
 
 fclose(fileID);
