@@ -31,13 +31,21 @@ nbasis*nbasis doubles: integral values in EN(:, :, i)
 
 1 double: integral value H2(i, j, k, l) 
 
-1 int: variable do_env controlling whether we compute environment potential integrals 
+1 int: variable do_env_in controlling whether we compute internal environment potential integrals 
 
-1 int: number of environment point charges (num_ptq) 
+1 int: number of internal environment point charges (num_ptq_in) 
 
-% environment potential energy integral matrices; there are (num_ptq) matricies, each in the form: 
+% internal environment potential energy integral matrices; there are (num_ptq_in) matricies, each in the form: 
 
-3 ints: nirrep, nrow, ncol for the ith environment potential energy matrix ENV(:, :, i) 
+3 ints: nirrep, nrow, ncol for the ith internal environment potential energy matrix ENV_IN(:, :, i) 
+
+1 int: variable do_env_ex controlling whether we compute external environment potential integrals 
+
+1 int: number of external environment point charges (num_ptq_ex) 
+
+% external environment potential energy integral matrices; there are (num_ptq_ex) matricies, each in the form: 
+
+3 ints: nirrep, nrow, ncol for the ith external environment potential energy matrix ENV_EX(:, :, i) 
 
 % end of file
 
