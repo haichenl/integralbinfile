@@ -20,10 +20,12 @@ int read_options(std::string name, Options &options)
     if (name == "INTEGRALBINFILE"|| options.read_globals()) {
         /*- The amount of information printed to the output file -*/
         options.add_int("PRINT", 1);
-        /*- Whether to compute two-electron integrals -*/
-        options.add_bool("DO_TEI", true);
         /*- Name of the output binary file -*/
         options.add_str("BINFILENAME", "integral.bin");
+        /*- Whether to compute one-electron integrals -*/
+        options.add_bool("DO_OEI", true);
+        /*- Whether to compute two-electron integrals -*/
+        options.add_bool("DO_TEI", true);
         /*- Whether to compute internal environment potential integrals -*/
         options.add_bool("DO_ENV_IN", false);
         /*- The number of internal environmental point charges -*/
@@ -80,13 +82,10 @@ void write_env(std::string InOrEx, boost::shared_ptr<MatrixFactory> factory, boo
 extern "C"
 PsiReturnType integralbinfile(Options &options)
 {
-    // spring start 
     std::string binfilename = options.get_str("BINFILENAME");
     Binary_ofstream integral_bin_file(binfilename.c_str());
-    // spring end
     
     int print = options.get_int("PRINT");
-    int doTei = options.get_bool("DO_TEI");
 
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
@@ -111,52 +110,61 @@ PsiReturnType integralbinfile(Options &options)
     boost::shared_ptr<MatrixFactory> factory(new MatrixFactory);
     factory->init_with(1, nbf, nbf);
 
-    // Form the one-electron integral objects from the integral factory
-    boost::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
-    boost::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
-    boost::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
-    // Form the one-electron integral matrices from the matrix factory
-    SharedMatrix sMat(factory->create_matrix("Overlap"));
-    SharedMatrix tMat(factory->create_matrix("Kinetic"));
-    SharedMatrix vMat(factory->create_matrix("Potential"));
-    SharedMatrix hMat(factory->create_matrix("One Electron Ints"));
-    // Compute the one electron integrals, telling each object where to store the result
-    sOBI->compute(sMat);
-    tOBI->compute(tMat);
-    vOBI->compute(vMat);
-
-    sMat->print();
-    tMat->print();
-    vMat->print();
-    
-    // spring start: output integrals into the binary file
-    
     // number of atoms
     int natom = molecule->natom();
+    int nbasis = aoBasis->nao();
     integral_bin_file << natom;
+    integral_bin_file << nbasis;
     
-    // overlap 
-    integral_bin_file << sMat;
+    // nuclear repulsion energy
+    double e_nuc = molecule->nuclear_repulsion_energy();
+    integral_bin_file << e_nuc;
     
-    // kinetic 
-    integral_bin_file << tMat;
-    
-    // potential 
-    for(int iatom = 0; iatom < natom; iatom++)
-    {
-        SharedMatrix vMat_temp(factory->create_matrix("Potential_1Atom"));
-        boost::shared_ptr<OneBodyAOInt> v1AtomOBI(integral->ao_potential_1atom(iatom));
-        v1AtomOBI->compute(vMat_temp);
-        integral_bin_file << vMat_temp;
+    int do_Oei = options.get_bool("DO_OEI");
+    integral_bin_file << do_Oei;
+    if(do_Oei) {
+        // Form the one-electron integral objects from the integral factory
+        boost::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
+        boost::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
+        boost::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
+        // Form the one-electron integral matrices from the matrix factory
+        SharedMatrix sMat(factory->create_matrix("Overlap"));
+        SharedMatrix tMat(factory->create_matrix("Kinetic"));
+        SharedMatrix vMat(factory->create_matrix("Potential"));
+        SharedMatrix hMat(factory->create_matrix("One Electron Ints"));
+        // Compute the one electron integrals, telling each object where to store the result
+        sOBI->compute(sMat);
+        tOBI->compute(tMat);
+        vOBI->compute(vMat);
+
+        sMat->print();
+        tMat->print();
+        vMat->print();
+        
+        // overlap 
+        integral_bin_file << sMat;
+        
+        // kinetic 
+        integral_bin_file << tMat;
+        
+        // potential 
+        for(int iatom = 0; iatom < natom; iatom++)
+        {
+            SharedMatrix vMat_temp(factory->create_matrix("Potential_1Atom"));
+            boost::shared_ptr<OneBodyAOInt> v1AtomOBI(integral->ao_potential_1atom(iatom));
+            v1AtomOBI->compute(vMat_temp);
+            integral_bin_file << vMat_temp;
+        }
+
+        // Form h = T + V by first cloning T and then adding V
+        hMat->copy(tMat);
+        hMat->add(vMat);
+        hMat->print();
     }
-    // spring end
 
-    // Form h = T + V by first cloning T and then adding V
-    hMat->copy(tMat);
-    hMat->add(vMat);
-    hMat->print();
-
-    if(doTei){
+    int do_Tei = options.get_bool("DO_TEI");
+    integral_bin_file << do_Tei;
+    if(do_Tei){
         //fprintf(outfile, "\n  Two-electron Integrals\n\n");
 
         // Now, the two-electron integrals
@@ -190,18 +198,10 @@ PsiReturnType integralbinfile(Options &options)
         //fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
     }
     
-    // spring start 
-    // nuclear repulsion energy
-    double e_nuc = molecule->nuclear_repulsion_energy();
-    integral_bin_file << e_nuc;
-    // spring end
-    
-    // spring start
     // whether we do internal environment calculation 
     write_env("IN", factory, integral, integral_bin_file, options);
     // whether we do external environment calculation 
     write_env("EX", factory, integral, integral_bin_file, options);
-    // spring end
 
     return Success;
 }
