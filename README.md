@@ -27,7 +27,7 @@ nbasis*nbasis doubles: integral values in EN(:, :, i)
 
 % 2-electron integrals; there are (number of unique 2-e integrals) of them, each in the form: 
 
-4 ints: indices i, j, k, l 
+4 doubles: indices i, j, k, l 
 
 1 double: integral value H2(i, j, k, l) 
 

@@ -63,7 +63,7 @@ void write_env(std::string InOrEx, boost::shared_ptr<MatrixFactory> factory, boo
         integral_bin_file << num_ptq;
         std::string zxyz_ptq_string = "ZXYZ_PTQ_";
         zxyz_ptq_string += InOrEx;
-        boost::shared_ptr<double[]> Zxyz_array(options.get_double_array(zxyz_ptq_string.c_str()));
+        boost::shared_ptr<double[1024]> Zxyz_array(options.get_double_array(zxyz_ptq_string.c_str()));
         boost::shared_ptr<MatrixFactory> Zxyzfactory(new MatrixFactory);
         SharedMatrix ZxyzMat = Zxyzfactory->create_shared_matrix("Zxyz", num_ptq, 4);
         set_ZxyzMat(ZxyzMat, Zxyz_array, num_ptq);
@@ -157,7 +157,7 @@ PsiReturnType integralbinfile(Options &options)
     hMat->print();
 
     if(doTei){
-        fprintf(outfile, "\n  Two-electron Integrals\n\n");
+        //fprintf(outfile, "\n  Two-electron Integrals\n\n");
 
         // Now, the two-electron integrals
         boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
@@ -176,18 +176,18 @@ PsiReturnType integralbinfile(Options &options)
                 int q = intIter.j();
                 int r = intIter.k();
                 int s = intIter.l();
-                fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
-                p, q, r, s, buffer[intIter.index()]);
+                double ind[4] = {p, q, r, s};
+                //fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
+                //p, q, r, s, buffer[intIter.index()]);
                 
                 // spring start 
-                integral_bin_file << p << q << r << s;
-                integral_bin_file << buffer[intIter.index()];
+                integral_bin_file << ind[0] << ind[1] << ind[2] << ind[3] << buffer[intIter.index()];
                 // spring end
                 
                 ++count;
             }
         }
-        fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
+        //fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
     }
     
     // spring start 

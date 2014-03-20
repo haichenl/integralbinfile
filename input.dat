@@ -13,12 +13,11 @@ R = .9
 A = 104.5
 }
 
-set {
-  basis 6-31g
+basis {
+  assign 6-31g
 }
 
 set integralbinfile {
-  print 1
   binfilename notintegral.bin # goes to upper case anyway
   do_env_in true
   num_ptq_in 2
