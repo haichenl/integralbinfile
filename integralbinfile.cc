@@ -28,12 +28,16 @@ int read_options(std::string name, Options &options)
         options.add_bool("DO_TEI", true);
         /*- Whether to compute internal environment potential integrals -*/
         options.add_bool("DO_ENV_IN", false);
+        /*- The index of internal environmental we use -*/
+        options.add_int("I_ENV_IN", 0);
         /*- The number of internal environmental point charges -*/
         options.add_int("NUM_PTQ_IN", 0);
         /*- zxyz array of internal environmental point charges -*/
         options.add("ZXYZ_PTQ_IN", new ArrayType());
         /*- Whether to compute external environment potential integrals -*/
         options.add_bool("DO_ENV_EX", false);
+        /*- The index of external environmental we use -*/
+        options.add_int("I_ENV_EX", 0);
         /*- The number of external environmental point charges -*/
         options.add_int("NUM_PTQ_EX", 0);
         /*- zxyz array of external environmental point charges -*/
@@ -43,7 +47,7 @@ int read_options(std::string name, Options &options)
     return true;
 }
 
-void set_ZxyzMat(SharedMatrix ZxyzMat, boost::shared_ptr<double[]> Zxyz_array, int num_ptq) 
+void set_ZxyzMat(SharedMatrix ZxyzMat, double* Zxyz_array, int num_ptq) 
 {
     for(int i = 0; i < num_ptq; i++) {
         for(int j = 0; j < 4; j++) {
@@ -59,23 +63,29 @@ void write_env(std::string InOrEx, boost::shared_ptr<MatrixFactory> factory, boo
     int doEnv = options.get_bool(do_env_string.c_str());
     integral_bin_file << doEnv;
     if(doEnv) {
+        std::string i_env_string = "I_ENV_";
+        i_env_string += InOrEx;
+        int i_env = options.get_int(i_env_string.c_str());
+        integral_bin_file << i_env;
         std::string num_ptq_string = "NUM_PTQ_";
         num_ptq_string += InOrEx;
         int num_ptq = options.get_int(num_ptq_string.c_str());
         integral_bin_file << num_ptq;
         std::string zxyz_ptq_string = "ZXYZ_PTQ_";
         zxyz_ptq_string += InOrEx;
-        boost::shared_ptr<double[1024]> Zxyz_array(options.get_double_array(zxyz_ptq_string.c_str()));
+        double* Zxyz_array(options.get_double_array(zxyz_ptq_string.c_str()));
         boost::shared_ptr<MatrixFactory> Zxyzfactory(new MatrixFactory);
         SharedMatrix ZxyzMat = Zxyzfactory->create_shared_matrix("Zxyz", num_ptq, 4);
         set_ZxyzMat(ZxyzMat, Zxyz_array, num_ptq);
+        SharedMatrix vMat_env(factory->create_matrix("Potential_env"));
+        SharedMatrix vMat_ptq(factory->create_matrix("Potential_ptq"));
         for(int i = 0; i < num_ptq; i++) {
             SharedVector curr_ptqvec(ZxyzMat->get_row(0, i));
             boost::shared_ptr<OneBodyAOInt> ptqOBI(integral->ao_potential_ptq(curr_ptqvec));
-            SharedMatrix vMat_ptq(factory->create_matrix("Potential_ptq"));
             ptqOBI->compute(vMat_ptq);
-            integral_bin_file<<vMat_ptq;
+            vMat_env->add(vMat_ptq);
         }
+        integral_bin_file<<vMat_env;
     }
 }
 
@@ -165,7 +175,7 @@ PsiReturnType integralbinfile(Options &options)
     int do_Tei = options.get_bool("DO_TEI");
     integral_bin_file << do_Tei;
     if(do_Tei){
-        //fprintf(outfile, "\n  Two-electron Integrals\n\n");
+        fprintf(outfile, "\n  Two-electron Integrals\n\n");
 
         // Now, the two-electron integrals
         boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
@@ -185,8 +195,8 @@ PsiReturnType integralbinfile(Options &options)
                 int r = intIter.k();
                 int s = intIter.l();
                 double ind[4] = {p, q, r, s};
-                //fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
-                //p, q, r, s, buffer[intIter.index()]);
+                fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
+                p, q, r, s, buffer[intIter.index()]);
                 
                 // spring start 
                 integral_bin_file << ind[0] << ind[1] << ind[2] << ind[3] << buffer[intIter.index()];
@@ -195,7 +205,7 @@ PsiReturnType integralbinfile(Options &options)
                 ++count;
             }
         }
-        //fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
+        fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
     }
     
     // whether we do internal environment calculation 

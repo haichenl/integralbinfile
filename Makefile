@@ -5,9 +5,9 @@
 #
 
 # Location of your PSI4 source
-top_srcdir = /home/imnotroot/psi4wp
+top_srcdir = /home/imnotroot/psi4wpgcc44
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/imnotroot/psi4wp/objdir
+top_objdir = /home/imnotroot/psi4wpgcc44/objdir
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
@@ -16,9 +16,9 @@ include $(top_objdir)/src/bin/MakeVars
 
 # Reset these values, MakeVars changes them to valud only valid in Psi4's objdir
 # Location of your PSI4 source
-top_srcdir = /home/imnotroot/psi4wp
+top_srcdir = /home/imnotroot/psi4wpgcc44
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/imnotroot/psi4wp/objdir
+top_objdir = /home/imnotroot/psi4wpgcc44/objdir
 
 PSITARGET = $(shell basename `pwd`).so
 PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
