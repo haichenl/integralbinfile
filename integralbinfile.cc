@@ -8,6 +8,8 @@
 // spring start
 #include "integral_binfile.h"
 #include "binaryio.h"
+#include "scf.h"
+//#include "scf.cc"
 // spring end
 
 INIT_PLUGIN
@@ -42,6 +44,15 @@ int read_options(std::string name, Options &options)
         options.add_int("NUM_PTQ_EX", 0);
         /*- zxyz array of external environmental point charges -*/
         options.add("ZXYZ_PTQ_EX", new ArrayType());
+        
+        /*- Whether to do an SCF calculation -*/
+        options.add_bool("DO_SCF", false);
+        /*- How tightly to converge the energy -*/
+        options.add_double("E_CONVERGENCE", 1.0E-10);
+        /*- How tightly to converge the density -*/
+        options.add_double("D_CONVERGENCE", 1.0E-6);
+        /*- How many iteration to allow -*/
+        options.add_int("SCF_MAXITER", 50);
     }
     
     return true;
@@ -120,7 +131,7 @@ PsiReturnType integralbinfile(Options &options)
     boost::shared_ptr<MatrixFactory> factory(new MatrixFactory);
     factory->init_with(1, nbf, nbf);
 
-    // number of atoms
+    // number of atoms and basis
     int natom = molecule->natom();
     int nbasis = aoBasis->nao();
     integral_bin_file << natom;
@@ -213,6 +224,32 @@ PsiReturnType integralbinfile(Options &options)
     // whether we do external environment calculation 
     write_env("EX", factory, integral, integral_bin_file, options);
 
+    int do_SCF = options.get_bool("DO_SCF");
+    integral_bin_file << do_SCF;
+    if(do_SCF)
+    {
+        SCF scf(options);
+        double Ehf = scf.compute_energy();
+        SharedMatrix orb = scf.get_orb();
+        integral_bin_file << Ehf;
+        integral_bin_file << orb;
+    }
+    
+    // number of electrons
+    int charge = molecule->molecular_charge();
+    int nelec  = 0;
+    for(int i = 0; i < molecule->natom(); ++i)
+        nelec += (int)molecule->Z(i);
+    nelec -= charge;
+    integral_bin_file << nelec;
+    
+    // Z array
+    int ztemp;
+    for(int i = 0; i < molecule->natom(); ++i) {
+        ztemp = (int)molecule->Z(i);
+        integral_bin_file << ztemp;
+    }
+    
     return Success;
 }
 
